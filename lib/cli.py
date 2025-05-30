@@ -1,6 +1,6 @@
-from lib.models.book import Book
-from lib.models.patron import Patron
-from lib.models.borrowrecord import BorrowRecord
+from models.book import Book
+from models.patron import Patron
+from models.borrowrecord import BorrowRecord
 
 def menu():
     while True:
@@ -156,5 +156,6 @@ def view_borrow_records():
     else:
         print("No borrow records found.")
 
-if __name__ == "_main_":
+if __name__ == "__main__":
     menu()
+
