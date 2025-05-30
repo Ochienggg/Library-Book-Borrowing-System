@@ -1,8 +1,8 @@
-from models.__init__ import CURSOR, CONN
+from . import CURSOR, CONN
 from datetime import date
 
 class BorrowRecord:
-    def __init__(self, patron_id, book_id, borrow_date=None, return_date=None, id=None):
+    def _init_(self, patron_id, book_id, borrow_date=None, return_date=None, id=None):
         self.id = id
         self.patron_id = patron_id
         self.book_id = book_id
@@ -28,9 +28,8 @@ class BorrowRecord:
     @classmethod
     def drop_table(cls):
         """Drops the borrow_records table."""
-    CURSOR.execute("DROP TABLE IF EXISTS borrow_records")
-    CONN.commit()
-
+        CURSOR.execute("DROP TABLE IF EXISTS borrow_records")
+        CONN.commit()
 
     def save(self):
         CURSOR.execute(
@@ -60,8 +59,28 @@ class BorrowRecord:
             return cls(row[1], row[2], row[3], row[4], id=row[0])
         return None
 
+    @classmethod
+    def get_by_id(cls, record_id):
+        return cls.find_by_id(record_id)
+
+    @classmethod
+    def get_active_by_book_id(cls, book_id):
+        CURSOR.execute("""
+            SELECT * FROM borrow_records
+            WHERE book_id = ? AND return_date IS NULL
+            ORDER BY borrow_date DESC
+            LIMIT 1
+        """, (book_id,))
+        row = CURSOR.fetchone()
+        if row:
+            return cls(row[1], row[2], row[3], row[4], id=row[0])
+        return None
+
     def mark_returned(self):
         self.return_date = date.today().isoformat()
         CURSOR.execute("UPDATE borrow_records SET return_date = ? WHERE id = ?", (self.return_date, self.id))
         CONN.commit()
 
+    @property
+    def returned(self):
+        return self.return_date is not None

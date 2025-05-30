@@ -1,11 +1,12 @@
-from models.__init__ import CURSOR, CONN
+from . import CURSOR, CONN
 
 class Book:
-    def __init__(self, title, author, id=None, availability=True):
+    def _init_(self, title, author, id=None, availability=True):
         self.id = id
         self.title = title
         self.author = author
         self.availability = availability
+
     @classmethod
     def create_table(cls):
         """Create the books table if it doesn't exist."""
@@ -22,8 +23,8 @@ class Book:
     @classmethod
     def drop_table(cls):
         """Drops the books table."""
-    CURSOR.execute("DROP TABLE IF EXISTS books")
-    CONN.commit()
+        CURSOR.execute("DROP TABLE IF EXISTS books")
+        CONN.commit()
 
     def save(self):
         CURSOR.execute(
@@ -53,12 +54,19 @@ class Book:
             return cls(row[1], row[2], row[0], row[3])
         return None
 
-    def mark_as_borrowed(self):
+    @classmethod
+    def get_by_id(cls, book_id):
+        return cls.find_by_id(book_id)
+
+    def is_available(self):
+        return self.availability
+
+    def mark_unavailable(self):
         self.availability = False
         CURSOR.execute("UPDATE books SET availability = 0 WHERE id = ?", (self.id,))
         CONN.commit()
 
-    def mark_as_returned(self):
+    def mark_available(self):
         self.availability = True
         CURSOR.execute("UPDATE books SET availability = 1 WHERE id = ?", (self.id,))
         CONN.commit()

@@ -1,7 +1,7 @@
-from models.__init__ import CURSOR, CONN
+from . import CURSOR, CONN
 
 class Patron:
-    def __init__(self, name, email=None, phone=None, id=None):
+    def _init_(self, name, email=None, phone=None, id=None):
         self.id = id
         self.name = name
         self.email = email
@@ -23,9 +23,8 @@ class Patron:
     @classmethod
     def drop_table(cls):
         """Drops the patrons table."""
-    CURSOR.execute("DROP TABLE IF EXISTS patrons")
-    CONN.commit()
-
+        CURSOR.execute("DROP TABLE IF EXISTS patrons")
+        CONN.commit()
 
     def save(self):
         CURSOR.execute(
@@ -54,3 +53,10 @@ class Patron:
         if row:
             return cls(row[1], row[2], row[3], row[0])
         return None
+
+    @classmethod
+    def get_by_id(cls, patron_id):
+        return cls.find_by_id(patron_id)
+
+    def _str_(self):
+        return f"{self.name} (Email: {self.email}, Phone: {self.phone})"
