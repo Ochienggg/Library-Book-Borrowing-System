@@ -1,7 +1,7 @@
 from . import CURSOR, CONN
 
 class Book:
-    def _init_(self, title, author, id=None, availability=True):
+    def __init__(self, title, author, id=None, availability=True):
         self.id = id
         self.title = title
         self.author = author

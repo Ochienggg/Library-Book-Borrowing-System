@@ -1,7 +1,7 @@
 from . import CURSOR, CONN
 
 class Patron:
-    def _init_(self, name, email=None, phone=None, id=None):
+    def __init__(self, name, email, phone=None, id=None):
         self.id = id
         self.name = name
         self.email = email
@@ -22,19 +22,28 @@ class Patron:
 
     @classmethod
     def drop_table(cls):
-        """Drops the patrons table."""
+        """Drop the patrons table."""
         CURSOR.execute("DROP TABLE IF EXISTS patrons")
         CONN.commit()
 
     def save(self):
-        CURSOR.execute(
-            "INSERT INTO patrons (name, email, phone) VALUES (?, ?, ?)",
-            (self.name, self.email, self.phone)
-        )
-        CONN.commit()
-        self.id = CURSOR.lastrowid
+        """Save the Patron to the database."""
+        if self.id is None:
+            CURSOR.execute(
+                "INSERT INTO patrons (name, email, phone) VALUES (?, ?, ?)",
+                (self.name, self.email, self.phone)
+            )
+            CONN.commit()
+            self.id = CURSOR.lastrowid
+        else:
+            CURSOR.execute(
+                "UPDATE patrons SET name = ?, email = ?, phone = ? WHERE id = ?",
+                (self.name, self.email, self.phone, self.id)
+            )
+            CONN.commit()
 
     def delete(self):
+        """Delete the Patron from the database."""
         if self.id is None:
             raise ValueError("Cannot delete a patron without an ID.")
         CURSOR.execute("DELETE FROM patrons WHERE id = ?", (self.id,))
@@ -42,21 +51,24 @@ class Patron:
 
     @classmethod
     def get_all(cls):
+        """Return a list of all patrons."""
         CURSOR.execute("SELECT * FROM patrons")
         rows = CURSOR.fetchall()
-        return [cls(row[1], row[2], row[3], row[0]) for row in rows]
+        return [cls(row[1], row[2], row[3], id=row[0]) for row in rows]
 
     @classmethod
     def find_by_id(cls, patron_id):
+        """Find a patron by ID."""
         CURSOR.execute("SELECT * FROM patrons WHERE id = ?", (patron_id,))
         row = CURSOR.fetchone()
         if row:
-            return cls(row[1], row[2], row[3], row[0])
+            return cls(row[1], row[2], row[3], id=row[0])
         return None
 
     @classmethod
     def get_by_id(cls, patron_id):
+        """Alias for find_by_id."""
         return cls.find_by_id(patron_id)
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.name} (Email: {self.email}, Phone: {self.phone})"
